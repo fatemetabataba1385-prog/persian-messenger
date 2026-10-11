@@ -751,14 +751,6 @@
         } else {
           socket.emit('private message', { ...payload, to: currentChat });
         }
-        // خودمان هم نشان بدهیم
-        addMessage({
-          type: 'image',
-          username: myUsername,
-          image: selectedImage,
-          caption: text,
-          time: getTime()
-        }, true);
         cancelImage();
         messageInput.value = '';
         return;
@@ -771,13 +763,6 @@
       } else {
         socket.emit('private message', { type: 'text', message: text, to: currentChat });
       }
-
-      addMessage({
-        type: 'text',
-        username: myUsername,
-        message: text,
-        time: getTime()
-      }, true);
 
       messageInput.value = '';
       socket.emit('stop typing', currentChat === 'public' ? {} : { to: currentChat });
