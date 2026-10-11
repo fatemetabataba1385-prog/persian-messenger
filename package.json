@@ -1,7 +1,7 @@
 {
   "name": "persian-messenger",
-  "version": "1.0.0",
-  "description": "پیام‌رسان ساده فارسی با پشتیبانی عکس و گروه",
+  "version": "2.0.0",
+  "description": "پیام‌رسان فارسی پیشرفته - نسخه شاهکار",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

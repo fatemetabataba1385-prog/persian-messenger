@@ -5,188 +5,238 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>پیام‌رسان فارسی</title>
   <style>
+    :root {
+      --bg: #0b0e17;
+      --surface: #131722;
+      --surface2: #1a1f2e;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+      --border: #1e293b;
+      --own: #1d4ed8;
+      --other: #1e293b;
+      --success: #22c55e;
+      --danger: #ef4444;
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: Tahoma, 'Segoe UI', Arial, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
     }
 
     body {
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      background: var(--bg);
+      color: var(--text);
       height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 10px;
+      overflow: hidden;
     }
 
-    .chat-container {
-      width: 100%;
-      max-width: 480px;
-      height: 95vh;
-      max-height: 800px;
-      background: #0f0f1a;
-      border-radius: 20px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    .app {
+      display: flex;
+      height: 100vh;
+      max-width: 1100px;
+      margin: 0 auto;
+      background: var(--surface);
+    }
+
+    /* ========== سایدبار ========== */
+    .sidebar {
+      width: 280px;
+      background: var(--surface2);
+      border-left: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      overflow: hidden;
-      border: 1px solid #2a2a4a;
+      flex-shrink: 0;
     }
 
-    .header {
-      background: linear-gradient(90deg, #0088cc, #00a8e8);
-      color: white;
-      padding: 14px 16px;
+    .sidebar-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: space-between;
     }
 
-    .header h1 {
-      font-size: 18px;
-      font-weight: bold;
+    .sidebar-header h2 {
+      font-size: 17px;
+      font-weight: 600;
     }
 
-    .online-count {
-      font-size: 13px;
-      background: rgba(255,255,255,0.2);
-      padding: 4px 10px;
-      border-radius: 12px;
+    .my-name {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
     }
 
-    #login-screen {
+    .online-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+    }
+
+    .online-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .online-item:hover {
+      background: rgba(59, 130, 246, 0.15);
+    }
+
+    .online-item.active {
+      background: rgba(59, 130, 246, 0.25);
+    }
+
+    .avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+
+    .online-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .online-name {
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .online-status {
+      font-size: 11px;
+      color: var(--success);
+    }
+
+    /* ========== چت اصلی ========== */
+    .chat-area {
       flex: 1;
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      padding: 30px;
-      gap: 20px;
-      color: #eee;
+      min-width: 0;
     }
 
-    #login-screen h2 {
-      font-size: 22px;
-      margin-bottom: 10px;
-    }
-
-    #login-screen p {
-      font-size: 14px;
-      color: #aaa;
-      text-align: center;
-      line-height: 1.6;
-    }
-
-    #username-input {
-      width: 100%;
-      max-width: 280px;
+    .chat-header {
       padding: 14px 18px;
-      border: 2px solid #0088cc;
-      border-radius: 25px;
-      background: #1a1a2e;
-      color: white;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface2);
+    }
+
+    .chat-title {
       font-size: 16px;
-      outline: none;
-      text-align: center;
+      font-weight: 600;
     }
 
-    #join-btn {
-      background: #0088cc;
-      color: white;
-      border: none;
-      padding: 12px 40px;
-      border-radius: 25px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: background 0.2s;
+    .chat-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
     }
 
-    #join-btn:hover {
-      background: #0077b3;
+    .connection-status {
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: rgba(34, 197, 94, 0.15);
+      color: var(--success);
     }
 
-    #chat-screen {
-      display: none;
-      flex-direction: column;
-      height: 100%;
+    .connection-status.offline {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--danger);
     }
 
     #messages {
       flex: 1;
       overflow-y: auto;
-      padding: 16px;
+      padding: 20px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
       scroll-behavior: smooth;
     }
 
     .message {
-      max-width: 80%;
+      max-width: 75%;
       padding: 10px 14px;
       border-radius: 16px;
       line-height: 1.5;
-      word-wrap: break-word;
+      position: relative;
       animation: fadeIn 0.2s ease;
+      word-break: break-word;
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
+      from { opacity: 0; transform: translateY(6px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
     .message.own {
       align-self: flex-end;
-      background: #0088cc;
-      color: white;
+      background: var(--own);
       border-bottom-left-radius: 4px;
     }
 
     .message.other {
       align-self: flex-start;
-      background: #252540;
-      color: #eee;
+      background: var(--other);
       border-bottom-right-radius: 4px;
     }
 
     .message.system {
       align-self: center;
       background: transparent;
-      color: #888;
+      color: var(--text-muted);
       font-size: 12px;
-      padding: 4px 10px;
+      padding: 4px 12px;
     }
 
-    .username {
+    .msg-username {
       font-size: 12px;
-      font-weight: bold;
+      font-weight: 600;
       margin-bottom: 4px;
-      opacity: 0.9;
+      color: #93c5fd;
     }
 
-    .message.own .username {
-      color: #cceeff;
+    .message.own .msg-username {
+      color: #bfdbfe;
     }
 
-    .message.other .username {
-      color: #7dd3fc;
-    }
-
-    .time {
-      font-size: 11px;
-      opacity: 0.65;
+    .msg-time {
+      font-size: 10px;
+      opacity: 0.7;
       margin-top: 4px;
       text-align: left;
     }
 
     .message img {
       max-width: 100%;
-      border-radius: 10px;
+      max-height: 320px;
+      border-radius: 12px;
       margin-top: 6px;
-      display: block;
       cursor: pointer;
+      display: block;
     }
 
     .caption {
@@ -194,185 +244,486 @@
       font-size: 14px;
     }
 
+    /* ========== ورودی ========== */
     .input-area {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      background: var(--surface2);
       display: flex;
-      padding: 10px 12px;
-      border-top: 1px solid #2a2a4a;
-      background: #151525;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .preview-bar {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 12px;
+      background: var(--surface);
+      border-radius: 12px;
+    }
+
+    .preview-bar img {
+      height: 56px;
+      border-radius: 8px;
+    }
+
+    .preview-bar button {
+      background: var(--danger);
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .typing-indicator {
+      font-size: 12px;
+      color: var(--text-muted);
+      height: 18px;
+      padding: 0 4px;
+    }
+
+    .input-row {
+      display: flex;
       gap: 8px;
       align-items: center;
     }
 
-    #message-input {
-      flex: 1;
-      padding: 12px 16px;
-      border: 1px solid #333;
-      border-radius: 22px;
-      background: #1a1a2e;
-      color: white;
-      font-size: 15px;
-      outline: none;
-    }
-
-    #message-input::placeholder {
-      color: #666;
-    }
-
     .icon-btn {
-      width: 42px;
-      height: 42px;
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
       border: none;
-      background: #252540;
-      color: #0088cc;
+      background: var(--surface);
+      color: var(--primary);
       font-size: 20px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+      transition: background 0.15s;
     }
 
     .icon-btn:hover {
-      background: #2a2a50;
+      background: #1e293b;
+    }
+
+    #message-input {
+      flex: 1;
+      padding: 12px 16px;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 15px;
+      outline: none;
+    }
+
+    #message-input:focus {
+      border-color: var(--primary);
     }
 
     #send-btn {
-      background: #0088cc;
+      background: var(--primary);
       color: white;
     }
 
     #send-btn:hover {
-      background: #0077b3;
+      background: var(--primary-hover);
     }
 
     #file-input {
       display: none;
     }
 
-    .preview-bar {
-      display: none;
-      padding: 8px 12px;
-      background: #1a1a2e;
-      border-top: 1px solid #2a2a4a;
+    /* ========== صفحه ورود ========== */
+    #login-screen {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 10px;
+      justify-content: center;
+      z-index: 100;
+      padding: 20px;
     }
 
-    .preview-bar img {
-      height: 50px;
+    .login-box {
+      background: var(--surface2);
+      padding: 40px 32px;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 360px;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+    }
+
+    .login-box h1 {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .login-box p {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-bottom: 28px;
+      line-height: 1.6;
+    }
+
+    #username-input {
+      width: 100%;
+      padding: 14px 18px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 16px;
+      outline: none;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    #username-input:focus {
+      border-color: var(--primary);
+    }
+
+    #join-btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    #join-btn:hover {
+      background: var(--primary-hover);
+    }
+
+    /* ========== لایت‌باکس عکس ========== */
+    #lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.92);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    #lightbox img {
+      max-width: 92%;
+      max-height: 92%;
       border-radius: 8px;
     }
 
-    .preview-bar button {
-      background: #e74c3c;
-      color: white;
+    /* ========== موبایل ========== */
+    .menu-btn {
+      display: none;
+      background: none;
       border: none;
-      padding: 6px 12px;
-      border-radius: 12px;
+      color: var(--text);
+      font-size: 22px;
       cursor: pointer;
-      font-size: 13px;
     }
 
-    /* اسکرول‌بار زیبا */
-    #messages::-webkit-scrollbar {
+    @media (max-width: 700px) {
+      .sidebar {
+        position: fixed;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        z-index: 50;
+        transform: translateX(100%);
+        transition: transform 0.25s ease;
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      .menu-btn {
+        display: block;
+      }
+      .message {
+        max-width: 88%;
+      }
+    }
+
+    /* اسکرول‌بار */
+    ::-webkit-scrollbar {
       width: 6px;
     }
-    #messages::-webkit-scrollbar-track {
+    ::-webkit-scrollbar-track {
       background: transparent;
     }
-    #messages::-webkit-scrollbar-thumb {
-      background: #333;
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
       border-radius: 3px;
     }
   </style>
 </head>
 <body>
-  <div class="chat-container">
-    <div class="header">
+  <!-- صفحه ورود -->
+  <div id="login-screen">
+    <div class="login-box">
       <h1>💬 پیام‌رسان فارسی</h1>
-      <div class="online-count" id="online-count">آنلاین: ۰</div>
-    </div>
-
-    <!-- صفحه ورود -->
-    <div id="login-screen">
-      <h2>خوش آمدید 👋</h2>
-      <p>
-        این یک پیام‌رسان گروهی ساده است.<br>
-        نام خود را وارد کنید و وارد شوید.<br>
-        می‌توانید متن، عکس و گیف بفرستید.
-      </p>
+      <p>نسخه پیشرفته<br>گپ عمومی + خصوصی · عکس تا ۱۵ مگابایت</p>
       <input type="text" id="username-input" placeholder="نام شما..." maxlength="20" autocomplete="off">
-      <button id="join-btn">ورود به چت</button>
+      <button id="join-btn">ورود</button>
+    </div>
+  </div>
+
+  <!-- اپ اصلی -->
+  <div class="app" id="app" style="display:none;">
+    <!-- سایدبار -->
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div>
+          <h2>آنلاین‌ها</h2>
+          <div class="my-name" id="my-name-display"></div>
+        </div>
+      </div>
+      <div class="online-list" id="online-list"></div>
     </div>
 
-    <!-- صفحه چت -->
-    <div id="chat-screen">
-      <div id="messages"></div>
-
-      <div class="preview-bar" id="preview-bar">
-        <img id="preview-img" src="" alt="پیش‌نمایش">
-        <button onclick="cancelImage()">حذف عکس</button>
+    <!-- ناحیه چت -->
+    <div class="chat-area">
+      <div class="chat-header">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <button class="menu-btn" id="menu-btn">☰</button>
+          <div>
+            <div class="chat-title" id="chat-title">گپ عمومی</div>
+            <div class="chat-subtitle" id="chat-subtitle">همه می‌توانند ببینند</div>
+          </div>
+        </div>
+        <div class="connection-status" id="conn-status">متصل</div>
       </div>
 
+      <div id="messages"></div>
+
       <div class="input-area">
-        <button class="icon-btn" onclick="document.getElementById('file-input').click()" title="ارسال عکس">📷</button>
-        <input type="file" id="file-input" accept="image/*">
-        <input type="text" id="message-input" placeholder="پیام بنویسید..." autocomplete="off">
-        <button class="icon-btn" id="send-btn" onclick="sendMessage()">➤</button>
+        <div class="preview-bar" id="preview-bar">
+          <img id="preview-img" src="" alt="">
+          <button onclick="cancelImage()">حذف</button>
+        </div>
+        <div class="typing-indicator" id="typing-indicator"></div>
+        <div class="input-row">
+          <button class="icon-btn" onclick="document.getElementById('file-input').click()" title="ارسال عکس">📷</button>
+          <input type="file" id="file-input" accept="image/*">
+          <input type="text" id="message-input" placeholder="پیام بنویسید..." autocomplete="off">
+          <button class="icon-btn" id="send-btn" onclick="sendMessage()">➤</button>
+        </div>
       </div>
     </div>
   </div>
 
+  <!-- لایت‌باکس -->
+  <div id="lightbox" onclick="this.style.display='none'">
+    <img id="lightbox-img" src="" alt="">
+  </div>
+
   <script src="/socket.io/socket.io.js"></script>
   <script>
-    const socket = io();
-    let myUsername = '';
+    // ========== متغیرها ==========
+    let socket;
+    let myUsername = localStorage.getItem('pm_username') || '';
+    let currentChat = 'public'; // 'public' یا نام کاربر برای خصوصی
     let selectedImage = null;
+    let typingTimeout = null;
 
     const loginScreen = document.getElementById('login-screen');
-    const chatScreen = document.getElementById('chat-screen');
+    const app = document.getElementById('app');
     const messagesDiv = document.getElementById('messages');
     const messageInput = document.getElementById('message-input');
     const usernameInput = document.getElementById('username-input');
-    const onlineCount = document.getElementById('online-count');
-    const fileInput = document.getElementById('file-input');
+    const onlineList = document.getElementById('online-list');
+    const chatTitle = document.getElementById('chat-title');
+    const chatSubtitle = document.getElementById('chat-subtitle');
+    const connStatus = document.getElementById('conn-status');
+    const typingIndicator = document.getElementById('typing-indicator');
     const previewBar = document.getElementById('preview-bar');
     const previewImg = document.getElementById('preview-img');
+    const fileInput = document.getElementById('file-input');
+    const myNameDisplay = document.getElementById('my-name-display');
+    const sidebar = document.getElementById('sidebar');
+    const menuBtn = document.getElementById('menu-btn');
 
-    // ورود با Enter
-    usernameInput.addEventListener('keypress', (e) => {
+    // اگر قبلاً اسم ذخیره شده، پر کن
+    if (myUsername) {
+      usernameInput.value = myUsername;
+    }
+
+    // ========== ورود ==========
+    document.getElementById('join-btn').onclick = joinChat;
+    usernameInput.addEventListener('keypress', e => {
       if (e.key === 'Enter') joinChat();
-    });
-    document.getElementById('join-btn').addEventListener('click', joinChat);
-
-    messageInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') sendMessage();
     });
 
     function joinChat() {
       const name = usernameInput.value.trim();
       if (!name) {
-        alert('لطفاً نام خود را وارد کنید');
+        alert('لطفاً یک نام وارد کنید');
         return;
       }
       myUsername = name;
-      socket.emit('join', name);
+      localStorage.setItem('pm_username', name);
+      myNameDisplay.textContent = 'شما: ' + name;
+
       loginScreen.style.display = 'none';
-      chatScreen.style.display = 'flex';
-      messageInput.focus();
+      app.style.display = 'flex';
+
+      connectSocket();
     }
 
-    // انتخاب عکس
-    fileInput.addEventListener('change', (e) => {
+    // ========== اتصال ==========
+    function connectSocket() {
+      socket = io({
+        reconnection: true,
+        reconnectionAttempts: 20,
+        reconnectionDelay: 1000
+      });
+
+      socket.on('connect', () => {
+        connStatus.textContent = 'متصل';
+        connStatus.classList.remove('offline');
+        socket.emit('join', myUsername);
+        socket.emit('get online');
+      });
+
+      socket.on('disconnect', () => {
+        connStatus.textContent = 'قطع شد...';
+        connStatus.classList.add('offline');
+      });
+
+      socket.on('online users', (list) => {
+        renderOnlineList(list);
+      });
+
+      socket.on('system message', (data) => {
+        addSystemMessage(data.text);
+      });
+
+      socket.on('public message', (data) => {
+        if (currentChat === 'public') {
+          addMessage(data, data.username === myUsername);
+        }
+      });
+
+      socket.on('private message', (data) => {
+        // اگر چت خصوصی مربوطه باز است نشان بده
+        const isMine = data.from === myUsername;
+        const other = isMine ? data.to : data.from;
+        if (currentChat === other) {
+          addMessage({
+            type: data.type,
+            username: data.from,
+            message: data.message,
+            image: data.image,
+            caption: data.caption,
+            time: data.time
+          }, isMine);
+        } else if (!isMine) {
+          // اعلان ساده
+          showPrivateNotification(data.from);
+        }
+      });
+
+      socket.on('typing', (data) => {
+        if (data.private && currentChat !== data.username) return;
+        if (!data.private && currentChat !== 'public') return;
+        typingIndicator.textContent = data.username + ' در حال نوشتن...';
+      });
+
+      socket.on('stop typing', () => {
+        typingIndicator.textContent = '';
+      });
+    }
+
+    // ========== لیست آنلاین ==========
+    function renderOnlineList(list) {
+      onlineList.innerHTML = '';
+
+      // گپ عمومی
+      const publicItem = document.createElement('div');
+      publicItem.className = 'online-item' + (currentChat === 'public' ? ' active' : '');
+      publicItem.innerHTML = `
+        <div class="avatar">🌐</div>
+        <div class="online-info">
+          <div class="online-name">گپ عمومی</div>
+          <div class="online-status">${list.length} نفر آنلاین</div>
+        </div>
+      `;
+      publicItem.onclick = () => switchChat('public');
+      onlineList.appendChild(publicItem);
+
+      list.forEach(user => {
+        if (user.username === myUsername) return;
+        const item = document.createElement('div');
+        item.className = 'online-item' + (currentChat === user.username ? ' active' : '');
+        item.innerHTML = `
+          <div class="avatar">${user.username.charAt(0)}</div>
+          <div class="online-info">
+            <div class="online-name">${escapeHtml(user.username)}</div>
+            <div class="online-status">آنلاین</div>
+          </div>
+        `;
+        item.onclick = () => switchChat(user.username);
+        onlineList.appendChild(item);
+      });
+    }
+
+    function switchChat(target) {
+      currentChat = target;
+      messagesDiv.innerHTML = '';
+      typingIndicator.textContent = '';
+
+      if (target === 'public') {
+        chatTitle.textContent = 'گپ عمومی';
+        chatSubtitle.textContent = 'همه می‌توانند ببینند';
+      } else {
+        chatTitle.textContent = target;
+        chatSubtitle.textContent = 'گفتگوی خصوصی';
+      }
+
+      // هایلایت آیتم فعال
+      document.querySelectorAll('.online-item').forEach(el => el.classList.remove('active'));
+      // دوباره رندر می‌شود با get online
+      socket.emit('get online');
+
+      // بستن سایدبار در موبایل
+      sidebar.classList.remove('open');
+    }
+
+    // ========== ارسال پیام ==========
+    messageInput.addEventListener('keypress', e => {
+      if (e.key === 'Enter') sendMessage();
+    });
+
+    messageInput.addEventListener('input', () => {
+      socket.emit('typing', currentChat === 'public' ? {} : { to: currentChat });
+      clearTimeout(typingTimeout);
+      typingTimeout = setTimeout(() => {
+        socket.emit('stop typing', currentChat === 'public' ? {} : { to: currentChat });
+      }, 1500);
+    });
+
+    fileInput.addEventListener('change', e => {
       const file = e.target.files[0];
       if (!file) return;
-      if (file.size > 5 * 1024 * 1024) {
-        alert('حجم عکس نباید بیشتر از ۵ مگابایت باشد');
+      if (file.size > 15 * 1024 * 1024) {
+        alert('حجم فایل نباید بیشتر از ۱۵ مگابایت باشد');
         return;
       }
       const reader = new FileReader();
-      reader.onload = (ev) => {
+      reader.onload = ev => {
         selectedImage = ev.target.result;
         previewImg.src = selectedImage;
         previewBar.style.display = 'flex';
@@ -390,11 +741,24 @@
       const text = messageInput.value.trim();
 
       if (selectedImage) {
-        socket.emit('image message', {
-          username: myUsername,
+        const payload = {
+          type: 'image',
           image: selectedImage,
           caption: text
-        });
+        };
+        if (currentChat === 'public') {
+          socket.emit('public message', payload);
+        } else {
+          socket.emit('private message', { ...payload, to: currentChat });
+        }
+        // خودمان هم نشان بدهیم
+        addMessage({
+          type: 'image',
+          username: myUsername,
+          image: selectedImage,
+          caption: text,
+          time: getTime()
+        }, true);
         cancelImage();
         messageInput.value = '';
         return;
@@ -402,48 +766,46 @@
 
       if (!text) return;
 
-      socket.emit('chat message', {
+      if (currentChat === 'public') {
+        socket.emit('public message', { type: 'text', message: text });
+      } else {
+        socket.emit('private message', { type: 'text', message: text, to: currentChat });
+      }
+
+      addMessage({
+        type: 'text',
         username: myUsername,
-        message: text
-      });
+        message: text,
+        time: getTime()
+      }, true);
+
       messageInput.value = '';
+      socket.emit('stop typing', currentChat === 'public' ? {} : { to: currentChat });
     }
 
-    // دریافت پیام
-    socket.on('chat message', (data) => {
-      const isOwn = data.username === myUsername;
+    // ========== نمایش پیام ==========
+    function addMessage(data, isOwn) {
       const div = document.createElement('div');
       div.className = `message ${isOwn ? 'own' : 'other'}`;
 
-      let content = `<div class="username">${escapeHtml(data.username)}</div>`;
-
-      if (data.type === 'image') {
-        content += `<img src="${data.image}" alt="عکس" onclick="window.open(this.src)">`;
-        if (data.caption) {
-          content += `<div class="caption">${escapeHtml(data.caption)}</div>`;
-        }
-      } else {
-        content += `<div>${escapeHtml(data.message)}</div>`;
+      let html = '';
+      if (!isOwn) {
+        html += `<div class="msg-username">${escapeHtml(data.username)}</div>`;
       }
 
-      content += `<div class="time">${data.time}</div>`;
-      div.innerHTML = content;
+      if (data.type === 'image') {
+        html += `<img src="${data.image}" alt="عکس" onclick="openLightbox(this.src)">`;
+        if (data.caption) {
+          html += `<div class="caption">${escapeHtml(data.caption)}</div>`;
+        }
+      } else {
+        html += `<div>${escapeHtml(data.message)}</div>`;
+      }
+
+      html += `<div class="msg-time">${data.time}</div>`;
+      div.innerHTML = html;
       messagesDiv.appendChild(div);
       messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    });
-
-    socket.on('user joined', (data) => {
-      updateOnline(data.online);
-      addSystemMessage(`${data.username} وارد شد`);
-    });
-
-    socket.on('user left', (data) => {
-      updateOnline(data.online);
-      addSystemMessage(`${data.username} خارج شد`);
-    });
-
-    function updateOnline(list) {
-      onlineCount.textContent = `آنلاین: ${list.length}`;
     }
 
     function addSystemMessage(text) {
@@ -454,11 +816,36 @@
       messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
 
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
+    function showPrivateNotification(from) {
+      // ساده: اگر در گپ عمومی هستیم یک سیستم مسیج نشان بده
+      if (currentChat === 'public') {
+        addSystemMessage(`📩 پیام خصوصی جدید از ${from}`);
+      }
     }
+
+    function openLightbox(src) {
+      document.getElementById('lightbox-img').src = src;
+      document.getElementById('lightbox').style.display = 'flex';
+    }
+
+    function getTime() {
+      return new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function escapeHtml(text) {
+      const d = document.createElement('div');
+      d.textContent = text;
+      return d.innerHTML;
+    }
+
+    // منوی موبایل
+    menuBtn.onclick = () => {
+      sidebar.classList.toggle('open');
+    };
+
+    // اگر اسم ذخیره شده بود، مستقیم وارد شو (اختیاری)
+    // برای تجربه بهتر می‌توانی این را فعال کنی:
+    // if (myUsername) { joinChat(); }
   </script>
 </body>
 </html>
