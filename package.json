@@ -1,0 +1,13 @@
+{
+  "name": "persian-messenger",
+  "version": "1.0.0",
+  "description": "پیام‌رسان ساده فارسی با پشتیبانی عکس و گروه",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "socket.io": "^4.7.5"
+  }
+}
