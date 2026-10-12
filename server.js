@@ -6,7 +6,7 @@ const path = require('path');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-  maxHttpBufferSize: 20 * 1024 * 1024 // 20MB برای عکس‌های بزرگ‌تر
+  maxHttpBufferSize: 20 * 1024 * 1024
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -14,6 +14,10 @@ app.use(express.json({ limit: '20mb' }));
 
 // کاربران آنلاین: socketId -> { username, id }
 const onlineUsers = new Map();
+// رمزهای ذخیره‌شده: username -> password (تا وقتی سرور روشن باشه)
+const userPasswords = new Map();
+// ری‌اکشن‌ها: messageId -> { emoji: [usernames] }
+const messageReactions = new Map();
 
 function getOnlineList() {
   return Array.from(onlineUsers.values()).map(u => ({
@@ -23,26 +27,53 @@ function getOnlineList() {
 }
 
 function makePrivateRoom(userA, userB) {
-  // اتاق خصوصی بر اساس دو اسم (مرتب شده)
   return 'private_' + [userA, userB].sort().join('_');
+}
+
+function getTime() {
+  return new Date().toLocaleTimeString('fa-IR', {
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+function makeId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
 
 io.on('connection', (socket) => {
   console.log('کاربر جدید:', socket.id);
 
-  // ورود کاربر
-  socket.on('join', (username) => {
-    const name = (username || 'ناشناس').trim().slice(0, 20);
-    if (!name) return;
+  // ورود با رمز
+  socket.on('join', (data) => {
+    const name = (data?.username || '').trim().slice(0, 20);
+    const password = (data?.password || '').trim().slice(0, 50);
 
-    // اگر قبلاً با این اسم بود، آپدیت کن
-    onlineUsers.set(socket.id, {
-      id: socket.id,
-      username: name
-    });
+    if (!name) {
+      socket.emit('join error', { message: 'نام را وارد کنید' });
+      return;
+    }
+    if (!password) {
+      socket.emit('join error', { message: 'رمز عبور را وارد کنید' });
+      return;
+    }
+
+    // اگر اسم قبلاً ثبت شده
+    if (userPasswords.has(name)) {
+      if (userPasswords.get(name) !== password) {
+        socket.emit('join error', { message: 'رمز عبور اشتباه است' });
+        return;
+      }
+    } else {
+      // اسم جدید → رمز را ذخیره کن
+      userPasswords.set(name, password);
+    }
+
+    // اگر قبلاً با این سوکت اسمی داشت پاک کن
+    onlineUsers.set(socket.id, { id: socket.id, username: name });
     socket.username = name;
 
-    // به همه لیست آنلاین جدید را بفرست
+    socket.emit('join success', { username: name });
     io.emit('online users', getOnlineList());
     io.emit('system message', {
       text: `${name} وارد شد`,
@@ -54,31 +85,28 @@ io.on('connection', (socket) => {
   socket.on('public message', (data) => {
     if (!socket.username || !data) return;
 
-    if (data.type === 'image') {
-      if (!data.image || !data.image.startsWith('data:image/')) return;
-      // محدودیت حجم تقریبی (base64 حدود ۱.۳ برابر حجم واقعی)
-      if (data.image.length > 20 * 1024 * 1024) return;
+    const msg = {
+      id: makeId(),
+      type: data.type === 'image' ? 'image' : 'text',
+      username: socket.username,
+      time: getTime(),
+      replyTo: data.replyTo || null,
+      replyText: data.replyText || null,
+      replyUser: data.replyUser || null
+    };
 
-      io.emit('public message', {
-        type: 'image',
-        username: socket.username,
-        image: data.image,
-        caption: (data.caption || '').slice(0, 500),
-        time: getTime(),
-        id: Date.now() + Math.random()
-      });
+    if (msg.type === 'image') {
+      if (!data.image || !data.image.startsWith('data:image/')) return;
+      if (data.image.length > 20 * 1024 * 1024) return;
+      msg.image = data.image;
+      msg.caption = (data.caption || '').slice(0, 500);
     } else {
       const text = String(data.message || '').trim().slice(0, 3000);
       if (!text) return;
-
-      io.emit('public message', {
-        type: 'text',
-        username: socket.username,
-        message: text,
-        time: getTime(),
-        id: Date.now() + Math.random()
-      });
+      msg.message = text;
     }
+
+    io.emit('public message', msg);
   });
 
   // پیام خصوصی
@@ -88,7 +116,6 @@ io.on('connection', (socket) => {
     const room = makePrivateRoom(socket.username, data.to);
     socket.join(room);
 
-    // طرف مقابل را هم به اتاق دعوت کن (اگر آنلاین باشد)
     for (const [id, user] of onlineUsers) {
       if (user.username === data.to) {
         io.sockets.sockets.get(id)?.join(room);
@@ -96,50 +123,67 @@ io.on('connection', (socket) => {
       }
     }
 
-    if (data.type === 'image') {
+    const msg = {
+      id: makeId(),
+      type: data.type === 'image' ? 'image' : 'text',
+      from: socket.username,
+      to: data.to,
+      time: getTime(),
+      replyTo: data.replyTo || null,
+      replyText: data.replyText || null,
+      replyUser: data.replyUser || null
+    };
+
+    if (msg.type === 'image') {
       if (!data.image || !data.image.startsWith('data:image/')) return;
       if (data.image.length > 20 * 1024 * 1024) return;
-
-      io.to(room).emit('private message', {
-        type: 'image',
-        from: socket.username,
-        to: data.to,
-        image: data.image,
-        caption: (data.caption || '').slice(0, 500),
-        time: getTime(),
-        id: Date.now() + Math.random()
-      });
+      msg.image = data.image;
+      msg.caption = (data.caption || '').slice(0, 500);
     } else {
       const text = String(data.message || '').trim().slice(0, 3000);
       if (!text) return;
-
-      io.to(room).emit('private message', {
-        type: 'text',
-        from: socket.username,
-        to: data.to,
-        message: text,
-        time: getTime(),
-        id: Date.now() + Math.random()
-      });
+      msg.message = text;
     }
+
+    io.to(room).emit('private message', msg);
   });
 
-  // کاربر شروع به تایپ کرده
+  // ری‌اکشن
+  socket.on('reaction', (data) => {
+    if (!socket.username || !data?.messageId || !data?.emoji) return;
+    const { messageId, emoji } = data;
+    const allowed = ['👍', '❤️', '😂', '😮', '😢', '🔥'];
+    if (!allowed.includes(emoji)) return;
+
+    if (!messageReactions.has(messageId)) {
+      messageReactions.set(messageId, {});
+    }
+    const reactions = messageReactions.get(messageId);
+    if (!reactions[emoji]) reactions[emoji] = [];
+
+    // اگر قبلاً همین کاربر این ری‌اکشن را زده، بردار (toggle)
+    const idx = reactions[emoji].indexOf(socket.username);
+    if (idx >= 0) {
+      reactions[emoji].splice(idx, 1);
+      if (reactions[emoji].length === 0) delete reactions[emoji];
+    } else {
+      reactions[emoji].push(socket.username);
+    }
+
+    io.emit('reaction update', {
+      messageId,
+      reactions: reactions
+    });
+  });
+
+  // تایپینگ
   socket.on('typing', (data) => {
     if (!socket.username) return;
     if (data && data.to) {
-      // تایپ خصوصی
       const room = makePrivateRoom(socket.username, data.to);
-      socket.to(room).emit('typing', {
-        username: socket.username,
-        private: true
-      });
+      socket.to(room).emit('typing', { username: socket.username, private: true });
     } else {
-      // تایپ عمومی
-      socket.broadcast.emit('typing', {
-        username: socket.username,
-        private: false
-      });
+      socket.broadcast.emit('typing', { username: socket.username, private: false });
     }
   });
 
@@ -147,19 +191,12 @@ io.on('connection', (socket) => {
     if (!socket.username) return;
     if (data && data.to) {
       const room = makePrivateRoom(socket.username, data.to);
-      socket.to(room).emit('stop typing', {
-        username: socket.username,
-        private: true
-      });
+      socket.to(room).emit('stop typing', { username: socket.username, private: true });
     } else {
-      socket.broadcast.emit('stop typing', {
-        username: socket.username,
-        private: false
-      });
+      socket.broadcast.emit('stop typing', { username: socket.username, private: false });
     }
   });
 
-  // درخواست لیست آنلاین
   socket.on('get online', () => {
     socket.emit('online users', getOnlineList());
   });
@@ -174,18 +211,10 @@ io.on('connection', (socket) => {
         time: getTime()
       });
     }
-    console.log('قطع شد:', socket.id);
   });
 });
 
-function getTime() {
-  return new Date().toLocaleTimeString('fa-IR', {
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-}
-
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  console.log(`سرور پیام‌رسان نسخه ۲ روی پورت ${PORT} اجرا شد`);
+  console.log(`سرور پیام‌رسان نسخه ۳ روی پورت ${PORT} اجرا شد`);
 });
